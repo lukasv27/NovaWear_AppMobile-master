@@ -2,7 +2,7 @@ package com.example.proyectonovawear.view
 
 
 
-import ChatViewModel
+
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
@@ -25,7 +25,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-
+import com.example.proyectonovawear.controller.ChatViewModel
 
 
 import com.example.proyectonovawear.controller.CrearProductosViewModel
@@ -35,7 +35,7 @@ import com.example.proyectonovawear.model.Productos
 
 // todas las pantallas que tengan barrra inferior se muestran aqui
 @Composable
-fun barraInferior(appNavController: NavController, listaProductos: MutableList<Productos>) {
+fun barraInferior(appNavController: NavController, usuarioId: Long, listaProductos: MutableList<Productos>) {
     val navController = rememberNavController()
     var selectedDestination by remember { mutableIntStateOf(0) }
 
@@ -92,7 +92,8 @@ fun barraInferior(appNavController: NavController, listaProductos: MutableList<P
                 Productos(
                     navController = navController,
                     appNavController = appNavController,
-                    viewModel = crearProductosViewModel
+                    viewModel = crearProductosViewModel,
+                    usuarioId = usuarioId // 👈 reemplaza con el id real del usuario logueado
                 )
             }
             composable("pantallaAgregar") {
@@ -116,15 +117,19 @@ fun barraInferior(appNavController: NavController, listaProductos: MutableList<P
                                     chatViewModel = chatViewModel)
             }
 
-            composable("mensaje/{productoId}/{productoNombre}") { backStackEntry ->
+            composable("mensaje/{productoId}/{productoNombre}/{usuarioId}") { backStackEntry ->
                 val productoId = backStackEntry.arguments?.getString("productoId")?.toLong() ?: 0L
                 val productoNombre = backStackEntry.arguments?.getString("productoNombre") ?: ""
+                val usuarioId = backStackEntry.arguments?.getString("usuarioId")?.toLong() ?: 0L
+
                 pantallaMensaje(
                     navController = navController,
                     appNavController = appNavController,
                     productoId = productoId,
                     productoNombre = productoNombre,
-                    chatViewModel = chatViewModel
+                    chatViewModel = chatViewModel,
+                    usuarioId = usuarioId // 👈 reemplaza con el id real del usuario logueado
+
                 )
             }
         }

@@ -83,8 +83,9 @@ fun MyApp() {
         composable("login") {
             PantallaLogin(appNavController = appNavController)
         }
+        val usuarioId: Long = 1L
         composable("barraInferior") {
-            barraInferior(appNavController = appNavController, listaProductos = listaProductos)
+            barraInferior(appNavController = appNavController, listaProductos = listaProductos, usuarioId = usuarioId)
         }
         composable("registroUsuario") {
             registroUsuario(appNavController = appNavController)

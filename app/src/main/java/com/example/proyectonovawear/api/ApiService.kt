@@ -21,8 +21,16 @@ interface ApiService {
         @Body body: Productos
     ): Productos
 
+    // Todos los productos del marketplace
     @GET("productos")
     suspend fun getProductos(): List<Productos>
+
+    // Productos de un usuario específico
+    @GET("productos/persona/{personaId}")
+    suspend fun getProductosPorPersona(
+        @Path("personaId") personaId: Long
+    ): List<Productos>
+
 
     @POST("/personas/registro")// aqui es la ruta del backend
     suspend fun signup(@Body registroDTO: RegistroDTO, @Header("Content-Type") contentType: String = "application/json"): Response<RegistroDTO>//definimos el metodo con su correspiondiente mapeo y definiendo los header necesarios para la consulta recorder que si no se define los header el backen retornara error y problemas de permiso

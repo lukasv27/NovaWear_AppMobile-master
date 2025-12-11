@@ -1,4 +1,5 @@
 import android.app.AlertDialog
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -47,6 +48,10 @@ fun PantallaLogin(appNavController: NavController) {
             confirmButton = {
                 Button(
                     onClick = {
+                        val prefs = context.getSharedPreferences("session", Context.MODE_PRIVATE)
+                        prefs.edit().putLong("usuarioId", state.usuarioId).apply()
+
+
                         viewModel.limpiarEstado()
                         appNavController.navigate("barraInferior") {
                             popUpTo("login") { inclusive = true }

@@ -1,7 +1,7 @@
 package com.example.proyectonovawear.view
 
 
-import ChatViewModel
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,7 +29,7 @@ import androidx.navigation.NavController
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.graphics.Color
-
+import com.example.proyectonovawear.controller.ChatViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,13 +75,14 @@ fun PantallaListaChats(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(16.dp)
             ) {
-                items(chats, key = { it.productoId }) { chat ->
+                items(chats, key = { it.producto.id ?: -1 }) { chat ->
                     OutlinedCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                navController.navigate("mensaje/${chat.productoId}/${chat.productoNombre}")
+                                navController.navigate("mensaje/${chat.producto.id}/${chat.producto.nombre}")
                             },
+
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant
                         )
@@ -90,7 +91,7 @@ fun PantallaListaChats(
                             modifier = Modifier.padding(16.dp)
                         ) {
                             Text(
-                                text = chat.productoNombre,
+                                text = chat.producto.nombre,
                                 style = MaterialTheme.typography.titleMedium
                             )
                             if (chat.mensajes.isNotEmpty()) {

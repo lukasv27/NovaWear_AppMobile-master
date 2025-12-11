@@ -8,7 +8,8 @@ data class Productos (
     val precio: Int,
     val descripcion: String,
     val talla: String,
-    val imagenUri: String? = null
+    val imagenUri: String? = null,
+    val dueno: Persona? = null
 
 
 )

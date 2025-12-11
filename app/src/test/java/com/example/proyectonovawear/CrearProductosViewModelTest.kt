@@ -2,6 +2,8 @@ import android.net.Uri
 import com.example.proyectonovawear.api.ApiService
 import com.example.proyectonovawear.controller.CrearProductosViewModel
 import com.example.proyectonovawear.model.Productos
+import io.mockk.coEvery
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
@@ -62,22 +64,38 @@ class CrearProductosViewModelTest {
         assert(result.createError == "Todos los campos son obligatorios")
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `agregarProducto añade producto a la lista`() = runTest {
+        val mockApi = mockk<ApiService>()
+        val productoMock = Productos(
+            nombre = "Polera negra",
+            descripcion = "Cuello redondo",
+            talla = "M",
+            precio = 12000,
+            imagenUri = "uri://mock"
+        )
+
+        // Mockear la llamada
+        coEvery { mockApi.agregarProducto(any(), any()) } returns productoMock
+
+        val viewModel = CrearProductosViewModel(api = mockApi)
+        viewModel.setPersonaId(1L)
+
         viewModel.onNombreChange("Polera negra")
         viewModel.onDescripcionChange("Cuello redondo")
-        viewModel.ontallaChange("M")
+        viewModel.onTallaChange("M")
         viewModel.onPrecioChange(12000)
-        viewModel.oniImageChange(mock<Uri>())
+        viewModel.onImageChange(mockk<Uri>())
 
         viewModel.agregarProducto()
 
-        // 👇 simular paso del tiempo del delay
-        testDispatcher.scheduler.advanceTimeBy(3000)
-        testDispatcher.scheduler.advanceUntilIdle()
+        // Avanzar coroutines
+        advanceUntilIdle()
 
         val result = viewModel.state.value
-        assert(result.list.isNotEmpty())
+        assert(result.list.contains(productoMock))
         assert(result.created == true)
     }
+
 }

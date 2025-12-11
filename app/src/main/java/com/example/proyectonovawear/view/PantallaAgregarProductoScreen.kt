@@ -1,5 +1,6 @@
 package com.example.proyectonovawear.view
 
+import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -36,10 +38,22 @@ fun PantallaAgregarProductoScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var mostrarCamara by remember { mutableStateOf(false) }
 
+    val context = LocalContext.current
+    val prefs = context.getSharedPreferences("session", Context.MODE_PRIVATE)
+    val usuarioId = prefs.getLong("usuarioId", -1L)
+
+    // 👇 Inicializamos personaId en el ViewModel al entrar a la pantalla
+    LaunchedEffect(usuarioId) {
+        if (usuarioId != -1L) {
+            viewModel.setPersonaId(usuarioId)
+            viewModel.cargarMisProductos()
+        }
+    }
+
     val lanzadorGaleria = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        viewModel.oniImageChange(uri)
+        viewModel.onImageChange(uri)
     }
 
     Scaffold(
@@ -74,7 +88,7 @@ fun PantallaAgregarProductoScreen(
 
             OutlinedTextField(
                 value = state.talla,
-                onValueChange = viewModel::ontallaChange,
+                onValueChange = viewModel::onTallaChange,
                 label = { Text("Talla") },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !state.isCreating
@@ -125,14 +139,13 @@ fun PantallaAgregarProductoScreen(
 
             // --- Botón para crear producto ---
             Button(
-                onClick = {
-                    viewModel.agregarProducto()
-                },
+                onClick = { viewModel.agregarProducto() },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !state.isCreating
             ) {
                 Text("Publicar Producto")
             }
+
             if (state.isCreating) {
                 LinearProgressIndicator(
                     modifier = Modifier
@@ -140,6 +153,7 @@ fun PantallaAgregarProductoScreen(
                         .padding(vertical = 8.dp)
                 )
             }
+
             // --- Mostrar errores ---
             state.createError?.let { error ->
                 Text(
@@ -149,29 +163,23 @@ fun PantallaAgregarProductoScreen(
                 )
             }
 
-
-
             // --- Si se creó correctamente ---
             state.created?.let {
                 LaunchedEffect(it) {
                     snackbarHostState.showSnackbar("Producto creado correctamente")
                     viewModel.limpiarResultado()
-
                 }
             }
-
-
         }
 
         if (mostrarCamara) {
             CameraCaptureScreen(
                 onImageCaptured = { uri ->
-                    viewModel.oniImageChange(uri)
+                    viewModel.onImageChange(uri)
                     mostrarCamara = false
                 },
                 onClose = { mostrarCamara = false }
             )
         }
-
     }
 }

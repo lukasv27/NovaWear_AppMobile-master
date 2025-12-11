@@ -1,6 +1,6 @@
 package com.example.proyectonovawear.view
 
-import ChatViewModel
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.proyectonovawear.controller.ChatViewModel
 
 
 import com.example.proyectonovawear.model.Mensaje
@@ -24,9 +25,17 @@ fun pantallaMensaje(
     appNavController: NavController,
     productoId: Long,
     productoNombre: String,
-    chatViewModel: ChatViewModel = viewModel()
+    usuarioId: Long, // 👈 id del usuario logueado
+    chatViewModel: ChatViewModel
 ) {
     var nuevoMensaje by remember { mutableStateOf("") }
+
+    // 👇 Al entrar a la pantalla, seteamos el personaId
+    LaunchedEffect(usuarioId, productoId) {
+        chatViewModel.setPersonaId(usuarioId)
+        chatViewModel.refreshChat(productoId, productoNombre)
+    }
+
 
     // Obtenemos el chat correspondiente al producto
     val chat = remember { chatViewModel.getChatForProduct(productoId, productoNombre) }
@@ -93,8 +102,8 @@ fun pantallaMensaje(
                                 id = System.nanoTime(),
                                 contenido = nuevoMensaje,
                                 fecha = System.currentTimeMillis(),
-                                esMio = true
-
+                                esMio = true,
+                                personaId = usuarioId // 👈 se guarda con el id correcto
                             )
                             chatViewModel.addMessage(productoId, productoNombre, mensaje)
                             nuevoMensaje = ""

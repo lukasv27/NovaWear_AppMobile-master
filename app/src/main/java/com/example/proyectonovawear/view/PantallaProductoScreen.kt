@@ -42,7 +42,7 @@ import com.example.proyectonovawear.model.Productos
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Productos(navController: NavController, appNavController: NavController, viewModel: CrearProductosViewModel = viewModel())
+fun Productos(navController: NavController, appNavController: NavController, viewModel: CrearProductosViewModel = viewModel() , usuarioId : Long)
     { val state by viewModel.state.collectAsState()
         val listaProductos = state.list
     Scaffold(
@@ -109,7 +109,7 @@ fun Productos(navController: NavController, appNavController: NavController, vie
                         Spacer(Modifier.height(30.dp))
                         Button(
                             onClick = {
-                                navController.navigate("mensaje/${producto.id}/${producto.nombre}")
+                                navController.navigate("mensaje/${producto.id}/${producto.nombre}/${usuarioId}")
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {

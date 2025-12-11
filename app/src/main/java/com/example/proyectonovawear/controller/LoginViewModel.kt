@@ -20,7 +20,8 @@ data class LoginUiState(
     val isLoading: Boolean = false,
     val loginError: String? = null,
     val loginSuccess: Boolean = false,
-    val nombreUsuario: String = ""
+    val nombreUsuario: String = "",
+    val usuarioId : Long = -1L
 )
 
 class LoginViewModel(
@@ -78,7 +79,8 @@ class LoginViewModel(
                             it.copy(
                                 isLoading = false,
                                 loginSuccess = true,
-                                nombreUsuario = persona.nombre
+                                nombreUsuario = persona.nombre,
+                                usuarioId = persona.id.toLong()
                             )
                         }
                     } else {

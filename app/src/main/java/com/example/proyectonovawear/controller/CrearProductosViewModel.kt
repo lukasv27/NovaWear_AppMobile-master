@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class crearProductosUiState(
+data class CrearProductosUiState(
     val nombre: String = "",
     val precio: String = "",
     val descripcion: String = "",
@@ -30,15 +30,23 @@ data class crearProductosUiState(
     val errorCargando: String? = null
 )
 
-class CrearProductosViewModel(private val api: ApiService = RetrofitProvider.create(), autoLoad: Boolean = true)  : ViewModel() {
+class CrearProductosViewModel(
+    private val api: ApiService = RetrofitProvider.create(),
 
+    autoLoad: Boolean = true
+) : ViewModel() {
 
+    private val _state = MutableStateFlow(CrearProductosUiState())
+    val state: StateFlow<CrearProductosUiState> = _state.asStateFlow()
 
-    private val _state = MutableStateFlow(crearProductosUiState())
-    val state: StateFlow<crearProductosUiState> = _state.asStateFlow()
+    // 👇 Persona logueada (dueño del producto)
+    private var personaId: Long? = null
+    fun setPersonaId(id: Long) {
+        personaId = id
+    }
 
     init {
-        if(autoLoad){
+        if (autoLoad) {
             cargarProductos()
         }
     }
@@ -51,7 +59,7 @@ class CrearProductosViewModel(private val api: ApiService = RetrofitProvider.cre
         _state.update { it.copy(descripcion = value, createError = null) }
     }
 
-    fun ontallaChange(value: String) {
+    fun onTallaChange(value: String) {
         _state.update { it.copy(talla = value, createError = null) }
     }
 
@@ -59,7 +67,7 @@ class CrearProductosViewModel(private val api: ApiService = RetrofitProvider.cre
         _state.update { it.copy(precio = value.toString(), createError = null) }
     }
 
-    fun oniImageChange(value: Uri?) {
+    fun onImageChange(value: Uri?) {
         _state.update { it.copy(imagenUri = value, createError = null) }
     }
 
@@ -77,7 +85,6 @@ class CrearProductosViewModel(private val api: ApiService = RetrofitProvider.cre
         }
     }
 
-
     fun agregarProducto() {
         val s = _state.value
 
@@ -87,12 +94,8 @@ class CrearProductosViewModel(private val api: ApiService = RetrofitProvider.cre
             return
         }
 
-
-
-
         viewModelScope.launch {
             _state.update { it.copy(isCreating = true, createError = null, created = null) }
-            kotlinx.coroutines.delay(3000)
             try {
                 val nuevoProducto = Productos(
                     nombre = s.nombre,
@@ -102,28 +105,47 @@ class CrearProductosViewModel(private val api: ApiService = RetrofitProvider.cre
                     imagenUri = s.imagenUri.toString()
                 )
 
-                // Agregar producto localmente a la lista
-                _state.update {
-                    it.copy(
-                        list = it.list + nuevoProducto,
-                        nombre = "",
-                        descripcion = "",
-                        talla = "",
-                        precio = "",
-                        imagenUri = null,
-                        created = true,
-                        isCreating = false
-                    )
-                }
+                personaId?.let { id ->
+                    // 👇 Llamada real al backend
+                    val productoGuardado = api.agregarProducto(id, nuevoProducto)
 
+                    // Actualizar lista con lo que devuelve el backend
+                    _state.update {
+                        it.copy(
+                            list = it.list + productoGuardado,
+                            nombre = "",
+                            descripcion = "",
+                            talla = "",
+                            precio = "",
+                            imagenUri = null,
+                            created = true,
+                            isCreating = false
+                        )
+                    }
+                } ?: run {
+                    _state.update { it.copy(isCreating = false, createError = "personaId no inicializado") }
+                }
             } catch (e: Exception) {
                 _state.update { it.copy(isCreating = false, createError = e.message ?: "Error al crear") }
             }
         }
     }
 
-    // --- Limpiar resultado ---
     fun limpiarResultado() {
         _state.update { it.copy(created = null, createError = null) }
+    }
+
+
+    fun cargarMisProductos() {
+        val id = personaId ?: return
+        viewModelScope.launch {
+            _state.update { it.copy(listaCargando = true, errorCargando = null) }
+            try {
+                val productosUsuario = api.getProductosPorPersona(id)
+                _state.update { it.copy(list = productosUsuario, listaCargando = false) }
+            } catch (e: Exception) {
+                _state.update { it.copy(listaCargando = false, errorCargando = e.message) }
+            }
+        }
     }
 }

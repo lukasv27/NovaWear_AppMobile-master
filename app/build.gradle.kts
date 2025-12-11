@@ -97,4 +97,8 @@ dependencies {
     testImplementation("app.cash.turbine:turbine:1.0.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
     testImplementation(kotlin("test"))
+    testImplementation("io.mockk:mockk:1.14.0")
+// versión puede variar
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+
 }
