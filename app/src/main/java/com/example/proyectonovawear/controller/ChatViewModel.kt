@@ -55,7 +55,7 @@ class ChatViewModel(
             try {
                 personaId?.let { interesadoId ->
                     api.enviarMensaje(productoId, interesadoId, mensaje.contenido!!)
-                    // 👇 refrescamos inmediatamente para traer mensajes de otros usuarios
+                    //  refrescamos inmediatamente para traer mensajes de otros usuarios
                     refreshChat(productoId, productoNombre)
                 } ?: Log.e("ChatViewModel", "personaId no inicializado")
             } catch (e: Exception) {

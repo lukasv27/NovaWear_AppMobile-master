@@ -18,7 +18,8 @@ import org.mockito.Mockito.*
 import retrofit2.Response
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class LoginViewModelTest {
+class
+LoginViewModelTest {
 
     private lateinit var viewModel: LoginViewModel
     private lateinit var apiService: ApiService
