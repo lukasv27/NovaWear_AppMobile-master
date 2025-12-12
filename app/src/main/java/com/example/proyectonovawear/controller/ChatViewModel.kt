@@ -15,9 +15,10 @@ import kotlinx.coroutines.launch
 
 class ChatViewModel(
     private val api: ChatApiService = RetrofitProvider.create(),
-    private var personaId: Long? = null // id dinámico del usuario logueado
+    private var personaId: Long? = null
 ) : ViewModel() {
 
+    // 👇 mantenemos el nombre _chats pero lo hacemos observable
     private val _chats = mutableStateListOf<Chat>()
     val chats: List<Chat> get() = _chats
 
@@ -39,42 +40,24 @@ class ChatViewModel(
 
         _chats.add(nuevo)
 
-        viewModelScope.launch {
-            try {
-                personaId?.let { interesadoId ->
-                    val chatData = api.getChat(productoId, interesadoId)
-
-                    // 👇 Transformamos cada mensaje con esMio calculado dinámicamente
-                    val mensajesTransformados = chatData.mensajes.map { mensaje ->
-                        mensaje.copy(
-                            esMio = mensaje.esMio(interesadoId) // usa la función del modelo
-                        )
-                    }
-
-                    nuevo.mensajes.clear()
-                    nuevo.mensajes.addAll(mensajesTransformados)
-                }
-            } catch (e: Exception) {
-                Log.e("ChatViewModel", "Error cargando chat", e)
-            }
-        }
+        // cargar mensajes iniciales
+        refreshChat(productoId, productoNombre)
 
         return nuevo
     }
 
     fun addMessage(productoId: Long, productoNombre: String, mensaje: Mensaje) {
         val chat = getChatForProduct(productoId, productoNombre)
+        chat.mensajes.add(mensaje.copy(esMio = true))
 
-        // Añadimos el mensaje localmente con esMio calculado
-        chat.mensajes.add(mensaje.copy(esMio = mensaje.esMio(personaId ?: -1)))
 
         viewModelScope.launch {
             try {
                 personaId?.let { interesadoId ->
-                    api.enviarMensaje(productoId, interesadoId, mensaje.contenido)
-                } ?: run {
-                    Log.e("ChatViewModel", "personaId global no inicializado")
-                }
+                    api.enviarMensaje(productoId, interesadoId, mensaje.contenido!!)
+                    // 👇 refrescamos inmediatamente para traer mensajes de otros usuarios
+                    refreshChat(productoId, productoNombre)
+                } ?: Log.e("ChatViewModel", "personaId no inicializado")
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error enviando mensaje", e)
             }
@@ -94,6 +77,7 @@ class ChatViewModel(
                     val chat = getChatForProduct(productoId, productoNombre)
                     chat.mensajes.clear()
                     chat.mensajes.addAll(mensajesTransformados)
+
                 }
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error refrescando chat", e)

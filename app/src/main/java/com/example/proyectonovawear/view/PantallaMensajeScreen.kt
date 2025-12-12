@@ -38,7 +38,8 @@ fun pantallaMensaje(
 
 
     // Obtenemos el chat correspondiente al producto
-    val chat = remember { chatViewModel.getChatForProduct(productoId, productoNombre) }
+    val chat = chatViewModel.getChatForProduct(productoId, productoNombre)
+    val mensaje = chat.mensajes
 
     Scaffold(
         topBar = {
